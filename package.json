@@ -1,0 +1,12 @@
+{
+  "name": "data-collection",
+  "version": "1.0.0",
+  "description": "API para recibir datos y guardarlos en CSV",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
