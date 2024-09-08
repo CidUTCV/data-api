@@ -1,11 +1,25 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const { google } = require('googleapis');
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const DRIVE_CLIENT_ID = process.env.DRIVE_CLIENT_ID;
+const DRIVE_CLIENT_SECRET = process.env.DRIVE_CLIENT_SECRET;
+const DRIVE_REFRESH_TOKEN = process.env.DRIVE_REFRESH_TOKEN;
+
+const oauth2Client = new google.auth.OAuth2(
+  DRIVE_CLIENT_ID,
+  DRIVE_CLIENT_SECRET,
+  'https://developers.google.com/oauthplayground' // Redirige a la Playground
+);
+oauth2Client.setCredentials({ refresh_token: DRIVE_REFRESH_TOKEN });
+
+const drive = google.drive({ version: 'v3', auth: oauth2Client });
 
 // Ruta para recibir datos
 app.post('/uploads', (req, res) => {
@@ -13,37 +27,42 @@ app.post('/uploads', (req, res) => {
   const sensorData = req.body.sensor_data || '';
 
   const now = new Date();
-  const timestamp = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
-  const fileName = `data_${timestamp}.csv`;
-  const filePath = path.join(__dirname, 'uploads', fileName);
-
+  const timestamp = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
   const line = `${timestamp},${gpsData},${sensorData}\n`;
 
-  fs.mkdir(path.dirname(filePath), { recursive: true }, (err) => {
+  const filePath = path.join(__dirname, 'data.csv');
+
+  fs.writeFile(filePath, line, { flag: 'a' }, (err) => {
     if (err) {
-      console.error('Error al crear directorio:', err);
-      res.status(500).send('Error al crear directorio');
+      console.error('Error al guardar los datos:', err);
+      res.status(500).send('Error al guardar los datos');
       return;
     }
 
-    fs.writeFile(filePath, line, { flag: 'a' }, (err) => {
+    // Subir a Google Drive
+    drive.files.create({
+      requestBody: {
+        name: `data_${timestamp}.csv`,
+        mimeType: 'text/csv'
+      },
+      media: {
+        mimeType: 'text/csv',
+        body: fs.createReadStream(filePath)
+      }
+    }, (err, file) => {
       if (err) {
-        console.error('Error al escribir en el archivo:', err);
-        res.status(500).send('Error al guardar los datos');
+        console.error('Error al subir el archivo a Google Drive:', err);
+        res.status(500).send('Error al subir el archivo a Google Drive');
         return;
       }
-      
-      console.log('Datos almacenados en el archivo CSV');
-      res.status(200).send('Datos recibidos y almacenados');
+
+      console.log('Archivo subido a Google Drive:', file.data);
+      res.status(200).send('Datos recibidos y almacenados en Google Drive');
     });
   });
-});
-
-app.get('/uploads/:filename', (req, res) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.filename);
-  res.sendFile(filePath);
 });
 
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
 });
+
