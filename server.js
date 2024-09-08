@@ -21,7 +21,6 @@ oauth2Client.setCredentials({ refresh_token: DRIVE_REFRESH_TOKEN });
 
 const drive = google.drive({ version: 'v3', auth: oauth2Client });
 
-// Ruta para recibir datos
 app.post('/uploads', (req, res) => {
   const gpsData = req.body.gps_data || '';
   const sensorData = req.body.sensor_data || '';
@@ -39,11 +38,12 @@ app.post('/uploads', (req, res) => {
       return;
     }
 
-    // Subir a Google Drive
+    // Subir a Google Drive en una carpeta específica
     drive.files.create({
       requestBody: {
         name: `data_${timestamp}.csv`,
-        mimeType: 'text/csv'
+        mimeType: 'text/csv',
+        parents: ['1l3C7mBZt9XSjNgdINkg3w5JAAyJOYdW-']  // ID de la carpeta
       },
       media: {
         mimeType: 'text/csv',
@@ -65,4 +65,3 @@ app.post('/uploads', (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
 });
-
