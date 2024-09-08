@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000; // Ajusta el puerto según sea necesario
 
 // Configura el middleware para procesar datos JSON
 app.use(bodyParser.json());
@@ -34,11 +34,18 @@ app.post('/upload', async (req, res) => {
       return res.status(400).send('Faltan datos en la solicitud.');
     }
 
+    // Supongamos que sensor_data es un array de objetos
+    const sortedSensorData = sensor_data.sort((a, b) => a.timestamp - b.timestamp);
+
     const timestamp = new Date().toISOString().replace(/:/g, '-');
     const filename = `data_${timestamp}.csv`;
 
     // Crear el archivo CSV en el servidor
-    const csvContent = `sensor_data,gps_data\n${sensor_data},${gps_data}`;
+    const csvContent = [
+      'timestamp,sensor_value,gps_lat,gps_long', // Asegúrate de que estos encabezados coincidan con los datos
+      ...sortedSensorData.map(item => `${item.timestamp},${item.sensor_value},${gps_data.lat},${gps_data.long}`)
+    ].join('\n');
+
     fs.writeFileSync(filename, csvContent);
 
     // Subir el archivo CSV a Google Drive
