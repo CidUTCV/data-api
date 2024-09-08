@@ -1,12 +1,14 @@
 {
-  "name": "data-collection",
+  "name": "data-api",
   "version": "1.0.0",
-  "description": "API para recibir datos y guardarlos en CSV",
+  "description": "API para subir datos de sensores a Google Drive",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.3",
+    "googleapis": "^100.0.0",
+    "body-parser": "^1.19.0"
   }
 }
