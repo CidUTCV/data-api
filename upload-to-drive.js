@@ -5,7 +5,7 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const CREDENTIALS = {
   "installed": {
     "client_id": process.env.DRIVE_CLIENT_ID,
-    "project_id": "drive-api-project-434005",  // Actualizado con tu PROJECT_ID
+    "project_id": "drive-api-project-434005", // Asegúrate de que este ID sea correcto
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
@@ -18,7 +18,7 @@ async function uploadFile(auth, fileName, content) {
   const drive = google.drive({ version: 'v3', auth });
   const fileMetadata = {
     name: fileName,
-    parents: ['1l3C7mBZt9XSjNgdINkg3w5JAAyJOYdW-'] // Actualizado con tu FOLDER_ID
+    parents: ['1l3C7mBZt9XSjNgdINkg3w5JAAyJOYdW-'] // Verifica que este ID de carpeta sea correcto
   };
   const media = {
     mimeType: 'text/csv',
